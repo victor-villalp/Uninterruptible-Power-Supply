@@ -70,13 +70,13 @@ void InitConsole(void)
 
 void PWMWave(void)
 {
-		SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF); // For pwm, external circuit and fan
-		SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC); // External circuit interrupt handler
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF); // For pwm, external circuit and fan
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC); // External circuit interrupt handler
     SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM1);  // The Tiva Launchpad has two modules (0 and 1). Module 1 covers the LED pins
 		
     //Configure PF1 Pins as PWM
     GPIOPinConfigure(GPIO_PF2_M1PWM6);
-		GPIOPinConfigure(GPIO_PF3_M1PWM7);
+    GPIOPinConfigure(GPIO_PF3_M1PWM7);
     GPIOPinTypePWM(GPIO_PORTF_BASE, GPIO_PIN_2|GPIO_PIN_3);
 
     //Configure PWM_GEN_3 Covers M1PWM6 and M1PWM7 
@@ -94,60 +94,56 @@ void PWMWave(void)
 		
     // Turn on the Output pins
     PWMOutputState(PWM1_BASE, PWM_OUT_6_BIT, true); 
-		PWMOutputInvert(PWM1_BASE, PWM_OUT_7_BIT, true);
-		PWMOutputState(PWM1_BASE, PWM_OUT_7_BIT, true); 
+    PWMOutputInvert(PWM1_BASE, PWM_OUT_7_BIT, true);
+    PWMOutputState(PWM1_BASE, PWM_OUT_7_BIT, true); 
 }
 
 void ADCInit(void)
 {
-		// Enable ADC peripheral
-		SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
-	  SysCtlDelay(3);
+	// Enable ADC peripheral
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
+	SysCtlDelay(3);
 		
-		// Configure sequencer, set priority
-	  ADCSequenceConfigure(ADC0_BASE, 3, ADC_TRIGGER_PROCESSOR, 1); // lm34
-		ADCSequenceConfigure(ADC0_BASE, 2, ADC_TRIGGER_PROCESSOR, 2); // Internal temperature sensor
-		ADCSequenceConfigure(ADC0_BASE, 1, ADC_TRIGGER_PROCESSOR, 0); // voltage sensor
+	// Configure sequencer, set priority
+	ADCSequenceConfigure(ADC0_BASE, 3, ADC_TRIGGER_PROCESSOR, 1); // lm34
+	DCSequenceConfigure(ADC0_BASE, 2, ADC_TRIGGER_PROCESSOR, 2); // Internal temperature sensor
+	ADCSequenceConfigure(ADC0_BASE, 1, ADC_TRIGGER_PROCESSOR, 0); // voltage sensor
 		
-		// Configure sequencer steps
-	  ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH7 | ADC_CTL_IE |ADC_CTL_END); // External temperature sensor
-		ADCSequenceStepConfigure(ADC0_BASE, 2, 0, ADC_CTL_TS | ADC_CTL_IE |ADC_CTL_END); // Intenal temperature sensor, TS		
-		ADCSequenceStepConfigure(ADC0_BASE, 1, 0, ADC_CTL_CH6); //ADC0 SS1 Step 0
-		ADCSequenceStepConfigure(ADC0_BASE, 1, 1, ADC_CTL_CH6); //ADC0 SS1 Step 1
-		ADCSequenceStepConfigure(ADC0_BASE, 1, 2, ADC_CTL_CH6); //ADC0 SS1 Step 2
-		ADCSequenceStepConfigure(ADC0_BASE,1,3,ADC_CTL_CH6|ADC_CTL_END);
+	// Configure sequencer steps
+	ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH7 | ADC_CTL_IE |ADC_CTL_END); // External temperature sensor
+	ADCSequenceStepConfigure(ADC0_BASE, 2, 0, ADC_CTL_TS | ADC_CTL_IE |ADC_CTL_END); // Intenal temperature sensor, TS		
+	ADCSequenceStepConfigure(ADC0_BASE, 1, 0, ADC_CTL_CH6); //ADC0 SS1 Step 0
+	ADCSequenceStepConfigure(ADC0_BASE, 1, 1, ADC_CTL_CH6); //ADC0 SS1 Step 1
+	ADCSequenceStepConfigure(ADC0_BASE, 1, 2, ADC_CTL_CH6); //ADC0 SS1 Step 2
+	ADCSequenceStepConfigure(ADC0_BASE,1,3,ADC_CTL_CH6|ADC_CTL_END);
 		
-		//ADC Interrupt
-		IntPrioritySet(INT_ADC0SS1, 0x00);
-		IntEnable(INT_ADC0SS1);
-		ADCIntEnable(ADC0_BASE,1);
-		ADCSequenceEnable(ADC0_BASE, 1);//voltage sensor
+	//ADC Interrupt
+	IntPrioritySet(INT_ADC0SS1, 0x00);
+	IntEnable(INT_ADC0SS1);
+	ADCIntEnable(ADC0_BASE,1);
+	ADCSequenceEnable(ADC0_BASE, 1);//voltage sensor
 		
-		IntPrioritySet(INT_ADC0SS3, 0x01);
-		IntEnable(INT_ADC0SS3)
-		ADCIntEnable(ADC0_BASE,3); 
-		ADCSequenceEnable(ADC0_BASE, 3); //lm34
+	IntPrioritySet(INT_ADC0SS3, 0x01);
+	IntEnable(INT_ADC0SS3)
+	ADCIntEnable(ADC0_BASE,3); 
+	ADCSequenceEnable(ADC0_BASE, 3); //lm34
 }
 
 int main()
-	{
-		// Set system clock, intialize console(serial monitor), PWM module, set PF1 as output for FAN
-	  SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
-	  InitConsole();
-		PWMWave();
-		ADCInit();
-		GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_1|GPIO_PIN_4); 
-		GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6);
-	  IntMasterEnable();
-		
-		while(1){
-			//Software Trigger Sequencer
-			ADCProcessorTrigger(ADC0_BASE, 2);
-			
-			//Print data
-			UARTprintf("%0d,%0d,%0d\n",TSc,TempValueC,voltage);
-	       SysCtlDelay(80000000 / 12);
-	    }
+{
+	// Set system clock, intialize console(serial monitor), PWM module, set PF1 as output for FAN
+	SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
+	InitConsole();
+	PWMWave();
+	ADCInit();
+	GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_1|GPIO_PIN_4); 
+	GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE, GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6);
+	IntMasterEnable();	
+	while(1){
+		ADCProcessorTrigger(ADC0_BASE, 2); //Software Trigger Sequencer
+		UARTprintf("%0d,%0d,%0d\n",TSc,TempValueC,voltage); //Print data
+		SysCtlDelay(80000000 / 12);
+	}
 			
 }
 	
@@ -175,9 +171,8 @@ void ADC0SS2_Handler() // ts
 	ADCIntClear(ADC0_BASE,2);
 	ADCSequenceDataGet(ADC0_BASE,2,rawTS);
 	
-	//Internal Temperature sensor
-	TSc = (uint32_t)(147.5 - ((75.0*3.3 *(float)rawTS[0])) / 4096.0); //Internal Temperature  ss2
-	TSf = ((TempValueC * 9) + 160) / 5;//Internal Temperature Sensor ss2
+	TSc = (uint32_t)(147.5 - ((75.0*3.3 *(float)rawTS[0])) / 4096.0); //Internal temp in F
+	TSf = ((TempValueC * 9) + 160) / 5; // Internal temp in C
 	
 	if(TSc>24){
 		GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_5, GPIO_PIN_5);//pf1
