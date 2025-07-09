@@ -59,43 +59,43 @@ volatile uint32_t wavv;
 
 void InitConsole(void)
 {
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
-    GPIOPinConfigure(GPIO_PA0_U0RX);
-    GPIOPinConfigure(GPIO_PA1_U0TX);
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0);
-    UARTClockSourceSet(UART0_BASE, UART_CLOCK_PIOSC);
-    GPIOPinTypeUART(GPIO_PORTA_BASE, GPIO_PIN_0 | GPIO_PIN_1);
-    UARTStdioConfig(0, 115200, 16000000);
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
+	GPIOPinConfigure(GPIO_PA0_U0RX);
+	GPIOPinConfigure(GPIO_PA1_U0TX);
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0);
+	UARTClockSourceSet(UART0_BASE, UART_CLOCK_PIOSC);
+	GPIOPinTypeUART(GPIO_PORTA_BASE, GPIO_PIN_0 | GPIO_PIN_1);
+	UARTStdioConfig(0, 115200, 16000000);
 }
 
 void PWMWave(void)
 {
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF); // For pwm, external circuit and fan
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC); // External circuit interrupt handler
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM1);  // The Tiva Launchpad has two modules (0 and 1). Module 1 covers the LED pins
-		
-    //Configure PF1 Pins as PWM
-    GPIOPinConfigure(GPIO_PF2_M1PWM6);
-    GPIOPinConfigure(GPIO_PF3_M1PWM7);
-    GPIOPinTypePWM(GPIO_PORTF_BASE, GPIO_PIN_2|GPIO_PIN_3);
-
-    //Configure PWM_GEN_3 Covers M1PWM6 and M1PWM7 
-    PWMGenConfigure(PWM1_BASE, PWM_GEN_3, PWM_GEN_MODE_DOWN | PWM_GEN_MODE_NO_SYNC); 
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF); // For pwm, external circuit and fan
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC); // External circuit interrupt handler
+	SysCtlPeripheralEnable(SYSCTL_PERIPH_PWM1);  // The Tiva Launchpad has two modules (0 and 1). Module 1 covers the LED pins
 	
-    //Set the Period (expressed in clock ticks)
-    PWMGenPeriodSet(PWM1_BASE, PWM_GEN_3, 20800);  // 20800 60 hz system clock divided by 2.5
-
-    //Set PWM duty-50% (Period /2)
-    PWMPulseWidthSet(PWM1_BASE, PWM_OUT_6,10400); // 10400 50 % duty cycle , PWM_OUT_5 = M1PWM5= PF1
-		PWMPulseWidthSet(PWM1_BASE, PWM_OUT_7,10400); // PWM_OUT_6 = M1PWM6 = PF2 CHECK SCOPE
-
-    // Enable the PWM generator
-    PWMGenEnable(PWM1_BASE, PWM_GEN_3);
-		
-    // Turn on the Output pins
-    PWMOutputState(PWM1_BASE, PWM_OUT_6_BIT, true); 
-    PWMOutputInvert(PWM1_BASE, PWM_OUT_7_BIT, true);
-    PWMOutputState(PWM1_BASE, PWM_OUT_7_BIT, true); 
+	//Configure PF1 Pins as PWM
+	GPIOPinConfigure(GPIO_PF2_M1PWM6);
+	GPIOPinConfigure(GPIO_PF3_M1PWM7);
+	GPIOPinTypePWM(GPIO_PORTF_BASE, GPIO_PIN_2|GPIO_PIN_3);
+	
+	//Configure PWM_GEN_3 Covers M1PWM6 and M1PWM7 
+	PWMGenConfigure(PWM1_BASE, PWM_GEN_3, PWM_GEN_MODE_DOWN | PWM_GEN_MODE_NO_SYNC);
+	
+	//Set the Period (expressed in clock ticks)
+	PWMGenPeriodSet(PWM1_BASE, PWM_GEN_3, 20800);  // 20800 60 hz system clock divided by 2.5
+	
+	//Set PWM duty-50% (Period /2)
+	PWMPulseWidthSet(PWM1_BASE, PWM_OUT_6,10400); // 10400 50 % duty cycle , PWM_OUT_5 = M1PWM5= PF1
+	PWMPulseWidthSet(PWM1_BASE, PWM_OUT_7,10400); // PWM_OUT_6 = M1PWM6 = PF2 CHECK SCOPE
+	
+	// Enable the PWM generator
+	PWMGenEnable(PWM1_BASE, PWM_GEN_3);
+	
+	// Turn on the Output pins
+	PWMOutputState(PWM1_BASE, PWM_OUT_6_BIT, true); 
+	PWMOutputInvert(PWM1_BASE, PWM_OUT_7_BIT, true);
+	PWMOutputState(PWM1_BASE, PWM_OUT_7_BIT, true); 
 }
 
 void ADCInit(void)
