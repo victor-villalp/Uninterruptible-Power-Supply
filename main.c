@@ -124,7 +124,7 @@ void ADCInit(void)
 	ADCSequenceEnable(ADC0_BASE, 1);//voltage sensor
 		
 	IntPrioritySet(INT_ADC0SS3, 0x01);
-	IntEnable(INT_ADC0SS3)
+	IntEnable(INT_ADC0SS3);
 	ADCIntEnable(ADC0_BASE,3); 
 	ADCSequenceEnable(ADC0_BASE, 3); //lm34
 }
